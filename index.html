@@ -3,268 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <title>Catálogo 3D Web</title>
-    <style>
-        /* Reseteo básico y estilos del body */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #333;
-            color: white;
-            /* Oculta el scrollbar del body */
-            overflow: hidden; 
-        }
-
-        /* El lienzo 3D ocupará toda la pantalla */
-        #webgl-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* Contenedor del Scroll View de la UI */
-        #ui-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 2; /* Asegura que la UI esté sobre el canvas 3D */
-            box-sizing: border-box; /* Para que el padding no afecte el width */
-            padding: 10px 0;
-        }
-
-        /* Scroll View horizontal */
-        .scroll-view {
-            width: 100%;
-            overflow-x: auto; /* Scroll horizontal */
-            overflow-y: hidden; /* Sin scroll vertical */
-            white-space: nowrap; /* Evita que los botones salten de línea */
-            padding: 0 10px;
-        }
-
-        /* Estilo de los botones */
-        .product-button {
-            display: inline-block; /* Los alinea horizontalmente */
-            padding: 12px 20px;
-            margin: 0 5px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            background-color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-
-        .product-button:hover {
-            background-color: #ddd;
-        }
-
-        .product-button:active {
-            transform: scale(0.95);
-        }
-    </style>
-
+    
     <!-- 
-      NUEVO: Import Map
-      Esto le dice al navegador qué URL usar cuando vea un 'import "three"'.
-      Soluciona el error "Failed to resolve module specifier".
+      CORRECCIÓN:
+      Quitamos la barra inicial (/) para usar una ruta relativa.
+    -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 
+      El importmap sigue siendo necesario aquí en el HTML
     -->
     <script type="importmap">
-      {
+    {
         "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.138/build/three.module.js",
-          "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@0.138/examples/jsm/controls/OrbitControls.js"
+            "three": "https://cdn.jsdelivr.net/npm/three@0.138.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.138.0/examples/jsm/"
         }
-      }
+    }
     </script>
-
 </head>
 <body>
+    <!-- El lienzo donde se dibujará la escena 3D -->
+    <canvas id="canvas-3d"></canvas>
+    
+    <!-- El contenedor para los botones de la UI -->
+    <div id="buttonContainer"></div>
 
-    <!-- El lienzo donde Three.js dibujará la escena -->
-    <canvas id="webgl-canvas"></canvas>
-
-    <!-- La Interfaz de Usuario (UI) -->
-    <div id="ui-container">
-        <div class="scroll-view" id="button-container">
-            <!-- Los botones se generarán con JavaScript -->
-        </div>
-    </div>
-
-    <!-- Importar Three.js (el "motor") -->
-    <script type="module">
-        // --- IMPORTACIONES DE THREE.JS (EL MOTOR) ---
-        // Ahora podemos usar imports "limpios" gracias al Import Map
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-        // Importaríamos GLTFLoader si usáramos modelos reales
-        // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-
-        
-        // --- 1. CONFIGURACIÓN DE LA ESCENA (Como en Unity) ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x333333); // Color de fondo
-
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 5;
-
-        const canvas = document.getElementById('webgl-canvas');
-        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-
-        // --- 2. ILUMINACIÓN (Como el Directional Light) ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Luz de ambiente
-        scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Luz del "sol"
-        directionalLight.position.set(5, 10, 7.5);
-        scene.add(directionalLight);
-
-        // --- 3. CONTROLES (Reemplazo de InputManager + Interactor) ---
-        // Esto nos da rotación y zoom con mouse/touch
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true; // Efecto de "desaceleración" suave
-
-        // --- 4. BASE DE DATOS Y LÓGICA DE PRODUCTOS ---
-        
-        // Nuestra "base de datos" (como los ScriptableObjects)
-        const productDatabase = [
-            { id: 'cubo', name: 'Producto 1' },
-            { id: 'esfera', name: 'Producto 2' },
-            { id: 'cilindro', name: 'Producto 3' },
-            { id: 'torus', name: 'Producto 4' },
-            { id: 'cono', name: 'Producto 5' },
-        ];
-
-        // "Pool" de objetos (como en ProductManager)
-        const productPool = new Map();
-        let currentlyActiveProduct = null;
-
-        // "Spawn Point"
-        const productSpawnPoint = new THREE.Group();
-        scene.add(productSpawnPoint);
-
-        // Función para crear los modelos (como CreateProductPool)
-        function createProductPool() {
-            // Placeholder: Usamos formas básicas en lugar de cargar GLBs
-            const geometryCubo = new THREE.BoxGeometry(2, 2, 2);
-            const geometryEsfera = new THREE.SphereGeometry(1.5, 32, 32);
-            const geometryCilindro = new THREE.CylinderGeometry(1, 1, 2.5, 32);
-            const geometryTorus = new THREE.TorusGeometry(1.5, 0.5, 16, 100);
-            const geometryCono = new THREE.ConeGeometry(1.5, 3, 32);
-            
-            const material = new THREE.MeshStandardMaterial({ 
-                color: 0x007bff, 
-                roughness: 0.3 
-            });
-
-            // Creamos los "prefabs" y los añadimos al pool
-            const cubo = new THREE.Mesh(geometryCubo, material);
-            productPool.set('cubo', cubo);
-            
-            const esfera = new THREE.Mesh(geometryEsfera, material);
-            productPool.set('esfera', esfera);
-
-            const cilindro = new THREE.Mesh(geometryCilindro, material);
-            productPool.set('cilindro', cilindro);
-
-            const torus = new THREE.Mesh(geometryTorus, material);
-            productPool.set('torus', torus);
-
-            const cono = new THREE.Mesh(geometryCono, material);
-            productPool.set('cono', cono);
-            
-            // Añadimos todos al spawn point y los ocultamos
-            productPool.forEach(model => {
-                model.visible = false;
-                productSpawnPoint.add(model);
-            });
-        }
-
-        // Función para mostrar un producto (DisplayProduct)
-        function displayProduct(productId) {
-            // 1. Oculta el modelo actual
-            if (currentlyActiveProduct) {
-                currentlyActiveProduct.visible = false;
-            }
-
-            // 2. Busca y muestra el nuevo modelo
-            const productToShow = productPool.get(productId);
-            if (productToShow) {
-                // 3. Resetea su estado (en web es más simple)
-                productToShow.rotation.set(0, 0, 0);
-                // (OrbitControls resetea la cámara, así que no necesitamos resetear escala)
-                
-                // 4. Lo activa
-                productToShow.visible = true;
-                
-                // 5. Lo guarda como el actual
-                currentlyActiveProduct = productToShow;
-
-                // Opcional: Centra la cámara en el nuevo objeto
-                controls.target.copy(productSpawnPoint.position);
-                controls.update();
-            }
-        }
-
-        // --- 5. LÓGICA DE LA UI (Reemplazo de UIManager) ---
-        
-        const buttonContainer = document.getElementById('button-container');
-
-        function createProductButtons() {
-            productDatabase.forEach(product => {
-                // 1. Crea el botón HTML
-                const button = document.createElement('button');
-                button.className = 'product-button';
-                button.innerText = product.name; // Como el buttonText.text
-
-                // 2. Añade el listener (como el OnButtonClick)
-                button.addEventListener('click', () => {
-                    displayProduct(product.id);
-                });
-
-                // 3. Lo añade al contenedor
-                buttonContainer.appendChild(button);
-            });
-        }
-
-
-        // --- 6. INICIALIZACIÓN Y BUCLE DE RENDER ---
-
-        // Función de Bucle (como el Update de Unity)
-        function animate() {
-            requestAnimationFrame(animate); // Llama a animate en el próximo frame
-
-            // Si los modelos están cargados, se pueden animar
-            // if(currentlyActiveProduct) {
-            //      // Gira el objeto activo lentamente
-            //      currentlyActiveProduct.rotation.y += 0.005;
-            // }
-
-            controls.update(); // Actualiza los controles (para el damping)
-            renderer.render(scene, camera); // Dibuja la escena
-        }
-
-        // Manejar el redimensionamiento de la ventana
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // --- ¡INICIO! ---
-        createProductPool();
-        createProductButtons();
-        displayProduct(productDatabase[0].id); // Muestra el primer producto al cargar
-        animate(); // Inicia el bucle de render
-    </script>
-
+    <!-- 
+      CORRECCIÓN:
+      Usamos "./" para que sea una ruta relativa explícita.
+    -->
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

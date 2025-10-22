@@ -1,0 +1,65 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+    color: #333;
+    /* Ocultamos el scroll de la página principal */
+    overflow: hidden; 
+}
+
+/* El lienzo 3D ocupará toda la pantalla, detrás de la UI */
+#canvas-3d {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1; /* Detrás de la UI */
+}
+
+/* Contenedor de la barra de botones */
+#buttonContainer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 120px; /* Altura de la barra de botones */
+    background-color: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid #ccc;
+    
+    /* Configuración para el scroll horizontal */
+    display: flex;
+    flex-direction: row; /* Alinear botones en fila */
+    align-items: center;  /* Centrar verticalmente */
+    overflow-x: auto;   /* Scroll horizontal si hay muchos botones */
+    overflow-y: hidden; /* Ocultar scroll vertical */
+    padding: 10px;
+    box-sizing: border-box; /* Para que el padding no afecte el ancho total */
+    
+    z-index: 2; /* Encima del canvas */
+}
+
+/* Estilo de cada botón */
+.product-button {
+    /* Tamaño del botón */
+    flex-shrink: 0; /* Evita que los botones se achiquen */
+    width: 150px;   /* Ancho fijo para cada botón */
+    height: 80px;   /* Altura fija */
+    
+    /* Estilo visual */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 0 5px; /* Espacio entre botones */
+    transition: background-color 0.3s;
+}
+
+.product-button:hover {
+    background-color: #0056b3;
+}
