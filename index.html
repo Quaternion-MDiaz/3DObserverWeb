@@ -6,15 +6,8 @@
     
     <title>Catálogo 3D Web</title>
     
-    <!-- 
-      CORRECCIÓN:
-      Quitamos la barra inicial (/) para usar una ruta relativa.
-    -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="./css/style.css">
     
-    <!-- 
-      El importmap sigue siendo necesario aquí en el HTML
-    -->
     <script type="importmap">
     {
         "imports": {
@@ -25,6 +18,9 @@
     </script>
 </head>
 <body>
+    <!-- Indicador de Carga -->
+    <div id="loader">Cargando modelos...</div>
+
     <!-- El lienzo donde se dibujará la escena 3D -->
     <canvas id="canvas-3d"></canvas>
     
@@ -32,9 +28,9 @@
     <div id="buttonContainer"></div>
 
     <!-- 
-      CORRECCIÓN:
-      Usamos "./" para que sea una ruta relativa explícita.
+      AHORA IMPORTAMOS EL SCRIPT PRINCIPAL
+      Usamos type="module" porque nuestro script usa 'import'
     -->
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="./js/main.js"></script>
 </body>
 </html>

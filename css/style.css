@@ -4,11 +4,9 @@ body {
     padding: 0;
     background-color: #f0f0f0;
     color: #333;
-    /* Ocultamos el scroll de la página principal */
     overflow: hidden; 
 }
 
-/* El lienzo 3D ocupará toda la pantalla, detrás de la UI */
 #canvas-3d {
     position: fixed;
     top: 0;
@@ -16,39 +14,34 @@ body {
     width: 100%;
     height: 100%;
     display: block;
-    z-index: 1; /* Detrás de la UI */
+    z-index: 1;
 }
 
-/* Contenedor de la barra de botones */
 #buttonContainer {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 120px; /* Altura de la barra de botones */
+    height: 120px;
     background-color: rgba(255, 255, 255, 0.9);
     border-top: 1px solid #ccc;
     
-    /* Configuración para el scroll horizontal */
     display: flex;
-    flex-direction: row; /* Alinear botones en fila */
-    align-items: center;  /* Centrar verticalmente */
-    overflow-x: auto;   /* Scroll horizontal si hay muchos botones */
-    overflow-y: hidden; /* Ocultar scroll vertical */
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
     padding: 10px;
-    box-sizing: border-box; /* Para que el padding no afecte el ancho total */
+    box-sizing: border-box;
     
-    z-index: 2; /* Encima del canvas */
+    z-index: 2;
 }
 
-/* Estilo de cada botón */
 .product-button {
-    /* Tamaño del botón */
-    flex-shrink: 0; /* Evita que los botones se achiquen */
-    width: 150px;   /* Ancho fijo para cada botón */
-    height: 80px;   /* Altura fija */
+    flex-shrink: 0;
+    width: 150px;
+    height: 80px;
     
-    /* Estilo visual */
     background-color: #007bff;
     color: white;
     border: none;
@@ -56,10 +49,50 @@ body {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    margin: 0 5px; /* Espacio entre botones */
+    margin: 0 5px;
     transition: background-color 0.3s;
 }
 
 .product-button:hover {
     background-color: #0056b3;
+}
+
+
+/* --- NUEVO: Estilos para el Indicador de Carga --- */
+
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(51, 51, 51, 0.9); /* Fondo oscuro semitransparente */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 99; /* Por encima de todo */
+    color: white;
+    font-size: 20px;
+}
+
+/* Oculta el loader (lo haremos con JS) */
+#loader.hidden {
+    display: none;
+}
+
+/* Animación del spinner */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
