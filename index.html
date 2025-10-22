@@ -243,10 +243,10 @@
             requestAnimationFrame(animate); // Llama a animate en el próximo frame
 
             // Si los modelos están cargados, se pueden animar
-            if(currentlyActiveProduct) {
-                 // Gira el objeto activo lentamente
-                 currentlyActiveProduct.rotation.y += 0.005;
-            }
+            // if(currentlyActiveProduct) {
+            //      // Gira el objeto activo lentamente
+            //      currentlyActiveProduct.rotation.y += 0.005;
+            // }
 
             controls.update(); // Actualiza los controles (para el damping)
             renderer.render(scene, camera); // Dibuja la escena
