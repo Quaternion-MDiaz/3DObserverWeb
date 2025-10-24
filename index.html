@@ -6,8 +6,15 @@
     
     <title>Catálogo 3D Web</title>
     
+    <!-- (ACTUALIZADO) Importamos la fuente Montserrat (Variable) de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    
+    <!-- Enlazamos la hoja de estilos externa -->
     <link rel="stylesheet" href="./css/style.css">
     
+    <!-- Mapa de importación para Three.js -->
     <script type="importmap">
     {
         "imports": {
@@ -21,16 +28,33 @@
     <!-- Indicador de Carga -->
     <div id="loader">Cargando modelos...</div>
 
+    <!-- Título principal estático -->
+    <div id="mainTitle">Catálogo 3D</div>
+
+    <!-- Logo de la marca -->
+    <div id="brandLogo">
+        <img src="./images/logo-marca.png" alt="Logo de la Marca">
+    </div>
+
+    <!-- El contenedor de título ahora tiene dos spans para estilos separados -->
+    <div id="productTitle">
+        <span id="productLine"></span>
+        <span id="productName"></span>
+    </div>
+
     <!-- El lienzo donde se dibujará la escena 3D -->
     <canvas id="canvas-3d"></canvas>
     
     <!-- El contenedor para los botones de la UI -->
     <div id="buttonContainer"></div>
 
-    <!-- 
-      AHORA IMPORTAMOS EL SCRIPT PRINCIPAL
-      Usamos type="module" porque nuestro script usa 'import'
-    -->
+    <!-- Iconos de ayuda para los controles -->
+    <div id="controlsHint">
+        <img src="./images/rotate-icon.png" alt="Rotar">
+        <img src="./images/mouse-icon.png" alt="Zoom/Pan">
+    </div>
+
+    <!-- Enlazamos el script principal -->
     <script type="module" src="./js/main.js"></script>
 </body>
 </html>

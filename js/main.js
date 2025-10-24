@@ -1,52 +1,73 @@
-// Importamos los módulos necesarios de Three.js desde el CDN
+// Importamos los módulos necesarios
 import * as THREE from 'three';
-// CAMBIO: Importamos TrackballControls en lugar de OrbitControls
 import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
-// Importamos el cargador de modelos GLTF
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
 
 // --- 1. CONFIGURACIÓN DE LA ESCENA ---
 
 let scene, camera, renderer, controls;
 let currentModel = null;
-const productPool = {}; // "Object Pool" para los modelos
+let currentActiveButton = null; 
+const productPool = {}; 
 
-// Referencia al indicador de carga
+// Referencias a elementos de la UI
 const loaderElement = document.getElementById('loader');
+const titleElement = document.getElementById('productTitle'); 
+const buttonContainer = document.getElementById('buttonContainer');
+const productLineElement = document.getElementById('productLine');
+const productNameElement = document.getElementById('productName');
 
-// Base de datos de productos
+
+// --- Base de datos de productos ---
 const productDatabase = [
     { 
-        id: 'Olla', 
+        id: 'olla', 
         name: 'Olla', 
-        type: 'GLB', // Esto está perfecto
-        path: 'models/olla.glb' // Esto también
+        linea: 'Línea Lisboa', 
+        type: 'GLB',
+        path: 'models/olla.glb', 
+        thumbnail: 'models/thumbnails/olla_thumb.jpg' 
     },
-    { id: 'esfera', name: 'Esfera', type: 'Sphere' },
-    { id: 'cubo', name: 'Cubo', type: 'Box' },
-    { id: 'cilindro', name: 'Cilindro', type: 'Cylinder' },
-    { id: 'dona', name: 'Dona', type: 'Torus' },
-    { id: 'cono', name: 'Cono', type: 'Cone' },
+    { 
+        id: 'esfera', 
+        name: 'Esfera',
+        linea: 'Línea Primitiva',
+        type: 'Sphere', 
+        thumbnail: 'models/thumbnails/esfera_thumb.jpg'
+    },
+    { 
+        id: 'cubo', 
+        name: 'Cubo',
+        linea: 'Línea Primitiva',
+        type: 'Box', 
+        thumbnail: 'models/thumbnails/cubo_thumb.jpg'
+    },
 ];
 
 // --- 2. FUNCIONES PRINCIPALES ---
 
 function init() {
-    // ... (código sin cambios) ...
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x333333); 
+
+    // --- (FONDO CORREGIDO) ---
+    // Actualizado a tu nuevo color de fondo #6d6d6d
+    scene.background = new THREE.Color(0x6d6d6d); 
+
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 5;
+
     const canvas = document.getElementById('canvas-3d');
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+
+    // (LUCES CORREGIDAS) 
+    const ambientLight = new THREE.AmbientLight(0xffffff, .9); 
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0); 
     directionalLight.position.set(5, 10, 7.5);
     scene.add(directionalLight);
+
     controls = new TrackballControls(camera, renderer.domElement);
     controls.rotateSpeed = 4.0;
     controls.zoomSpeed = 1.2;
@@ -55,17 +76,18 @@ function init() {
     controls.noPan = false;
     controls.staticMoving = true;
     controls.dynamicDampingFactor = 0.3;
+
     loadApp();
     animate();
     window.addEventListener('resize', onWindowResize);
 }
 
-// Función asíncrona para cargar recursos
+// Carga asíncrona de recursos
 async function loadApp() {
     try {
         await createProductPool();
         createProductButtons();
-        displayProduct(productDatabase[0]);
+        displayProduct(productDatabase[0]); 
         loaderElement.classList.add('hidden');
     } catch (error) {
         console.error("Error fatal al cargar la app:", error);
@@ -81,27 +103,17 @@ async function createProductPool() {
     const loadPromises = productDatabase.map(product => {
         let modelPromise;
 
-        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-        // Ahora comprobamos si el tipo es GLB O GLTF
         if (product.type === 'GLB' || product.type === 'GLTF') {
             modelPromise = loader.loadAsync(product.path).then(gltf => {
                 const model = gltf.scene;
                 
-                // --- NUEVA SECCIÓN: ARREGLO DE TRANSPARENCIA ---
-                // Recorremos todos los hijos del modelo (todas las mallas)
                 model.traverse(child => {
-                    // Verificamos si el hijo es una Malla (Mesh) y tiene un material
                     if (child.isMesh && child.material) {
-                        // Forzamos a que el material NO sea transparente.
-                        // Esto soluciona los problemas de Z-fighting (parpadeo)
-                        // que se ven en el video de la olla.
                         child.material.transparent = false;
-                        child.material.depthWrite = true; // Asegura que escriba en el buffer de profundidad
+                        child.material.depthWrite = true;
                     }
                 });
-                // --- FIN DE LA NUEVA SECCIÓN ---
 
-                // Centrar y escalar el modelo
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
                 model.position.sub(center); 
@@ -115,15 +127,12 @@ async function createProductPool() {
 
             }).catch(error => {
                 console.error('Error al cargar el modelo:', product.path, error);
-                // Si falla la carga, crea un cubo rojo de fallback
                 const fallbackGeo = new THREE.BoxGeometry(2, 2, 2);
                 const fallbackMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
                 return new THREE.Mesh(fallbackGeo, fallbackMat);
             });
 
-        } else {
-            // ... (código sin cambios) ...
-            // El producto es una forma básica (placeholder)
+        } else if (product.type) { 
             let geometry;
             switch (product.type) {
                 case 'Box': geometry = new THREE.BoxGeometry(2, 2, 2); break;
@@ -134,11 +143,14 @@ async function createProductPool() {
                 default: geometry = new THREE.BoxGeometry(2, 2, 2);
             }
             modelPromise = Promise.resolve(new THREE.Mesh(geometry, material));
+        } else {
+            modelPromise = Promise.resolve(new THREE.Object3D());
         }
-        // ... (código sin cambios) ...
+
         return modelPromise.then(model => ({
             id: product.id,
-            model: model
+            model: model,
+            button: null 
         }));
     });
 
@@ -147,35 +159,62 @@ async function createProductPool() {
     loadedModels.forEach(item => {
         item.model.visible = false; 
         scene.add(item.model);
-        productPool[item.id] = item.model; 
+        productPool[item.id] = item; 
     });
 }
 
-// Crea los botones en la UI (HTML)
+// Crea los botones en la UI
 function createProductButtons() {
-    // ... (código sin cambios) ...
-    const container = document.getElementById('buttonContainer');
     productDatabase.forEach(product => {
         const button = document.createElement('button');
         button.className = 'product-button';
-        button.innerText = product.name;
+        
+        if (product.thumbnail) {
+            button.style.backgroundImage = `url(${product.thumbnail})`;
+        } else {
+            button.innerText = product.name[0]; 
+            button.style.backgroundColor = '#ccc';
+            button.style.color = 'black';
+        }
+        
         button.addEventListener('click', () => {
             displayProduct(product);
         });
-        container.appendChild(button);
+        
+        if (productPool[product.id]) {
+            productPool[product.id].button = button;
+        }
+        
+        buttonContainer.appendChild(button);
     });
 }
 
-// Muestra un producto (activándolo del pool)
+// Muestra un producto
 function displayProduct(productData) {
-    // ... (código sin cambios) ...
     if (currentModel) {
         currentModel.visible = false;
     }
-    const modelToShow = productPool[productData.id];
-    if (modelToShow) {
-        modelToShow.visible = true;
-        currentModel = modelToShow;
+    
+    if (currentActiveButton) {
+        currentActiveButton.classList.remove('active');
+    }
+
+    const poolItem = productPool[productData.id];
+    if (poolItem && poolItem.model) {
+        poolItem.model.visible = true;
+        currentModel = poolItem.model;
+        
+        if(poolItem.button) {
+            poolItem.button.classList.add('active');
+            currentActiveButton = poolItem.button;
+        }
+        
+        if (titleElement && productLineElement && productNameElement) {
+            productLineElement.innerText = productData.linea;
+            productNameElement.innerText = ` / ${productData.name}`;
+            titleElement.style.opacity = '1'; 
+        }
+        
         controls.reset();
         camera.position.set(0, 0, 5); 
         controls.target.set(0, 0, 0); 
@@ -184,7 +223,6 @@ function displayProduct(productData) {
 
 // Bucle de render (Update)
 function animate() {
-    // ... (código sin cambios) ...
     requestAnimationFrame(animate);
     controls.update(); 
     renderer.render(scene, camera);
@@ -192,7 +230,6 @@ function animate() {
 
 // Maneja el redimensionamiento de la ventana
 function onWindowResize() {
-    // ... (código sin cambios) ...
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);

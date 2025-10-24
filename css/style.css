@@ -1,98 +1,161 @@
+/* --- Estilos Generales --- */
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
-    background-color: #f0f0f0;
-    color: #333;
     overflow: hidden; 
+    font-family: 'Montserrat', sans-serif;
+    /* Tu nuevo color de fondo gris oscuro */
+    background-color: #6d6d6d;
 }
 
+/* --- Lienzo 3D --- */
 #canvas-3d {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    display: block;
-    z-index: 1;
+    z-index: 1; 
 }
 
+/* --- Título Principal (Top-Left) --- */
+#mainTitle {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 2; 
+    
+    color: #dddcdca2;
+    opacity: 0.5;
+    font-size: 28px; 
+    font-weight: 700; 
+}
+
+/* --- (CORREGIDO) Título del Producto (Top-Center) --- */
+#productTitle {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%); 
+    
+    /* Le di un poco más de opacidad al fondo para que contraste */
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: none;
+    
+    padding: 8px 16px;
+    border-radius: 20px;
+    z-index: 2;
+    opacity: 1; /* Lo dejamos en 1 para que se vea siempre */
+    transition: opacity 0.8s ease;
+}
+
+/* --- (CORREGIDO) Estilos para los spans dentro del título --- */
+#productLine {
+    /* Cambiado a un color claro para que contraste */
+    color: #E0E0E0;
+    font-size: 18px;
+    font-weight: 700; 
+}
+
+#productName {
+    /* Cambiado a un color claro para que contraste */
+    color: #E0E0E0;
+    font-size: 18px;
+    font-weight: 400; 
+}
+
+/* --- Logo de la Marca (Top-Right) --- */
+#brandLogo {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2;
+}
+#brandLogo img {
+    height: 100px; 
+    width: auto;
+    /* La opacidad estaba muy baja, la subo para que se vea */
+    opacity: 0.25; 
+}
+
+/* --- Contenedor de Botones --- */
 #buttonContainer {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 120px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-top: 1px solid #ccc;
-    
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
-    overflow-y: hidden;
+    height: 110px; 
     padding: 10px;
     box-sizing: border-box;
-    
+    display: flex; 
+    flex-wrap: nowrap; 
+    overflow-x: auto; 
+    background-color: #B3B3B3;
+    backdrop-filter: none; 
+    z-index: 2; 
+}
+
+/* --- Ayuda de Controles (Bottom-Right) --- */
+#controlsHint {
+    position: fixed;
+    bottom: 130px; 
+    right: 20px;
     z-index: 2;
+    display: flex;
+    flex-direction: row;
+    gap: 10px; 
+}
+#controlsHint img {
+    width: 32px; 
+    height: 32px;
+    opacity: 0.6;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
 }
 
+/* --- Estilo de cada Botón --- */
 .product-button {
-    flex-shrink: 0;
-    width: 150px;
-    height: 80px;
-    
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
+    flex-shrink: 0; 
+    width: 90px;
+    height: 90px;
+    margin-right: 10px;
+    background-color: #FFFFFF;
+    color: transparent; 
+    border: 2px solid transparent; 
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     cursor: pointer;
-    margin: 0 5px;
-    transition: background-color 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
 }
-
+.product-button:last-child {
+    margin-right: 0;
+}
 .product-button:hover {
-    background-color: #0056b3;
+    transform: scale(1.05); 
+}
+.product-button.active {
+    border-color: #007bff; 
+    box-shadow: 0 4px 10px rgba(0,123,255,0.3);
 }
 
-
-/* --- NUEVO: Estilos para el Indicador de Carga --- */
-
+/* --- Indicador de Carga --- */
 #loader {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(51, 51, 51, 0.9); /* Fondo oscuro semitransparente */
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 99; /* Por encima de todo */
+    background-color: rgba(0, 0, 0, 0.7);
     color: white;
-    font-size: 20px;
+    font-size: 24px;
+    z-index: 10;
+    transition: opacity 0.5s;
 }
-
-/* Oculta el loader (lo haremos con JS) */
 #loader.hidden {
-    display: none;
-}
-
-/* Animación del spinner */
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 20px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    opacity: 0;
+    pointer-events: none;
 }
