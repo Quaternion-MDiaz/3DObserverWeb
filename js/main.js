@@ -79,7 +79,7 @@ function init() {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); 
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); 
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0); 
     directionalLight.position.set(5, 10, 7.5);
