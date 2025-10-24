@@ -1,9 +1,8 @@
 /* --- Estilos Generales --- */
 body {
     margin: 0;
-    overflow: hidden; 
+    overflow: hidden;
     font-family: 'Montserrat', sans-serif;
-    /* Tu nuevo color de fondo gris oscuro */
     background-color: #6d6d6d;
 }
 
@@ -14,7 +13,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1; 
+    z-index: 1;
 }
 
 /* --- Título Principal (Top-Left) --- */
@@ -22,45 +21,40 @@ body {
     position: fixed;
     top: 20px;
     left: 20px;
-    z-index: 2; 
-    
+    z-index: 2;
     color: #dddcdca2;
     opacity: 0.5;
-    font-size: 28px; 
-    font-weight: 700; 
+    font-size: 28px;
+    font-weight: 700;
 }
 
-/* --- (CORREGIDO) Título del Producto (Top-Center) --- */
+/* --- Título del Producto (Top-Center) --- */
 #productTitle {
     position: fixed;
     top: 20px;
     left: 50%;
-    transform: translateX(-50%); 
-    
-    /* Le di un poco más de opacidad al fondo para que contraste */
+    transform: translateX(-50%);
     background-color: rgba(0, 0, 0, 0.2);
     backdrop-filter: none;
-    
     padding: 8px 16px;
     border-radius: 20px;
     z-index: 2;
-    opacity: 1; /* Lo dejamos en 1 para que se vea siempre */
+    opacity: 1;
     transition: opacity 0.8s ease;
+    white-space: nowrap; /* Evita que el título se parta en dos líneas */
 }
 
-/* --- (CORREGIDO) Estilos para los spans dentro del título --- */
+/* --- Estilos para los spans dentro del título --- */
 #productLine {
-    /* Cambiado a un color claro para que contraste */
     color: #E0E0E0;
     font-size: 18px;
-    font-weight: 700; 
+    font-weight: 700;
 }
 
 #productName {
-    /* Cambiado a un color claro para que contraste */
     color: #E0E0E0;
     font-size: 18px;
-    font-weight: 400; 
+    font-weight: 400;
 }
 
 /* --- Logo de la Marca (Top-Right) --- */
@@ -71,10 +65,9 @@ body {
     z-index: 2;
 }
 #brandLogo img {
-    height: 100px; 
+    height: 50px; /* Tamaño por defecto */
     width: auto;
-    /* La opacidad estaba muy baja, la subo para que se vea */
-    opacity: 0.25; 
+    opacity: 0.6;
 }
 
 /* --- Contenedor de Botones --- */
@@ -83,29 +76,40 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 110px; 
+    height: 110px; /* Altura por defecto */
     padding: 10px;
     box-sizing: border-box;
-    display: flex; 
-    flex-wrap: nowrap; 
-    overflow-x: auto; 
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto; /* Permite scroll horizontal */
+    /* Mejora el scroll en iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Oculta la barra de scroll visualmente (opcional) */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE y Edge */
     background-color: #B3B3B3;
-    backdrop-filter: none; 
-    z-index: 2; 
+    backdrop-filter: none;
+    z-index: 2;
 }
+/* Oculta la barra de scroll en Chrome, Safari y Opera */
+#buttonContainer::-webkit-scrollbar {
+    display: none;
+}
+
 
 /* --- Ayuda de Controles (Bottom-Right) --- */
 #controlsHint {
     position: fixed;
-    bottom: 130px; 
-    right: 20px;
+    /* Posición por defecto, ajustada para la barra de botones */
+    bottom: 125px; /* 110px + 15px margen */
+    right: 15px;
     z-index: 2;
     display: flex;
     flex-direction: row;
-    gap: 10px; 
+    gap: 10px;
 }
 #controlsHint img {
-    width: 32px; 
+    width: 32px; /* Tamaño por defecto */
     height: 32px;
     opacity: 0.6;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
@@ -113,13 +117,13 @@ body {
 
 /* --- Estilo de cada Botón --- */
 .product-button {
-    flex-shrink: 0; 
-    width: 90px;
-    height: 90px;
+    flex-shrink: 0;
+    width: 90px; /* Tamaño por defecto */
+    height: 90px; /* Tamaño por defecto */
     margin-right: 10px;
     background-color: #FFFFFF;
-    color: transparent; 
-    border: 2px solid transparent; 
+    color: transparent;
+    border: 2px solid transparent;
     border-radius: 12px;
     background-size: cover;
     background-position: center;
@@ -132,10 +136,10 @@ body {
     margin-right: 0;
 }
 .product-button:hover {
-    transform: scale(1.05); 
+    transform: scale(1.05);
 }
 .product-button.active {
-    border-color: #007bff; 
+    border-color: #007bff;
     box-shadow: 0 4px 10px rgba(0,123,255,0.3);
 }
 
@@ -158,4 +162,54 @@ body {
 #loader.hidden {
     opacity: 0;
     pointer-events: none;
+}
+
+/* --- (NUEVO) Media Query para Pantallas Pequeñas (ej. celulares en vertical) --- */
+@media (max-width: 768px) {
+    
+    #mainTitle {
+        font-size: 20px; /* Reducimos tamaño del título principal */
+        top: 15px;
+        left: 15px;
+    }
+
+    #productTitle {
+        top: 15px;
+        padding: 6px 12px; /* Reducimos padding */
+        max-width: calc(100% - 120px); /* Evita que choque con los logos */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Añade "..." si el texto es muy largo */
+    }
+    #productLine, #productName {
+        font-size: 14px; /* Reducimos tamaño del título del producto */
+    }
+
+    #brandLogo {
+        top: 15px;
+        right: 15px;
+    }
+    #brandLogo img {
+        height: 35px; /* Reducimos tamaño del logo */
+    }
+
+    #buttonContainer {
+        height: 90px; /* Hacemos la barra de botones más baja */
+        padding: 8px; /* Reducimos padding */
+    }
+    .product-button {
+        width: 74px; /* Hacemos los botones más pequeños */
+        height: 74px; /* Hacemos los botones más pequeños */
+        margin-right: 8px;
+        border-radius: 10px;
+    }
+
+    #controlsHint {
+        bottom: 100px; /* Ajustamos posición para la nueva altura de la barra */
+        right: 10px;
+        gap: 8px;
+    }
+    #controlsHint img {
+        width: 28px; /* Hacemos los iconos más pequeños */
+        height: 28px;
+    }
 }
