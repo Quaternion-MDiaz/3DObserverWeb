@@ -26,8 +26,9 @@ const productDatabase = [
         linea: 'Línea Lisboa', 
         type: 'GLB',
         path: 'models/olla.glb', 
-        thumbnail: 'models/thumbnails/olla_thumb.jpg',
-        initialPosition: { x: 0, y: -0.3, z: 0 }
+        thumbnail: 'models/thumbnails/olla_thumb.png',
+        initialPosition: { x: 0, y: -0.3, z: 0 },
+         initialRotation: { x: 0, y: 90, z: 0 }
     },
     { 
           id: 'knife', 
@@ -35,7 +36,7 @@ const productDatabase = [
         linea: 'Línea Lisboa', 
         type: 'GLB',
         path: 'models/knife.glb', 
-        thumbnail: 'models/thumbnails/knife_thumb.jpg', 
+        thumbnail: 'models/thumbnails/knife_thumb.png', 
         initialRotation: { x: 0, y: 90, z: 45 }
         },{ 
         id: 'dona', 
