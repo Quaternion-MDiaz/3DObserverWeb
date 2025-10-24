@@ -17,12 +17,12 @@ const loaderElement = document.getElementById('loader');
 
 // Base de datos de productos
 const productDatabase = [
-    // { 
-    //     id: 'bathroomSet', 
-    //     name: 'Set de Baño', 
-    //     type: 'GLB', 
-    //     path: 'models/bathroom_props_free.glb'
-    // },
+    { 
+        id: 'Olla', 
+        name: 'Olla', 
+        type: 'GLB', // Esto está perfecto
+        path: 'models/olla.glb' // Esto también
+    },
     { id: 'esfera', name: 'Esfera', type: 'Sphere' },
     { id: 'cubo', name: 'Cubo', type: 'Box' },
     { id: 'cilindro', name: 'Cilindro', type: 'Cylinder' },
@@ -33,31 +33,21 @@ const productDatabase = [
 // --- 2. FUNCIONES PRINCIPALES ---
 
 function init() {
-    // Configuración de la Escena
+    // ... (código sin cambios) ...
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x333333); 
-
-    // Configuración de la Cámara
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 5;
-
-    // Configuración del Renderer
     const canvas = document.getElementById('canvas-3d');
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-
-    // Configuración de las Luces
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
     directionalLight.position.set(5, 10, 7.5);
     scene.add(directionalLight);
-
-    // --- CAMBIO IMPORTANTE ---
-    // Usamos TrackballControls
     controls = new TrackballControls(camera, renderer.domElement);
-    // Ajustes para que se sienta bien
     controls.rotateSpeed = 4.0;
     controls.zoomSpeed = 1.2;
     controls.panSpeed = 0.8;
@@ -65,15 +55,8 @@ function init() {
     controls.noPan = false;
     controls.staticMoving = true;
     controls.dynamicDampingFactor = 0.3;
-    // --- FIN DEL CAMBIO ---
-
-    // Inicia la carga asíncrona de la app
     loadApp();
-
-    // Bucle de animación
     animate();
-
-    // Evento de redimensionamiento
     window.addEventListener('resize', onWindowResize);
 }
 
@@ -81,14 +64,9 @@ function init() {
 async function loadApp() {
     try {
         await createProductPool();
-        
         createProductButtons();
-        
         displayProduct(productDatabase[0]);
-
-        // Oculta el loader
         loaderElement.classList.add('hidden');
-
     } catch (error) {
         console.error("Error fatal al cargar la app:", error);
         loaderElement.innerText = "Error al cargar los modelos. Refresca la página.";
@@ -103,10 +81,26 @@ async function createProductPool() {
     const loadPromises = productDatabase.map(product => {
         let modelPromise;
 
-        if (product.type === 'GLB') {
+        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+        // Ahora comprobamos si el tipo es GLB O GLTF
+        if (product.type === 'GLB' || product.type === 'GLTF') {
             modelPromise = loader.loadAsync(product.path).then(gltf => {
                 const model = gltf.scene;
                 
+                // --- NUEVA SECCIÓN: ARREGLO DE TRANSPARENCIA ---
+                // Recorremos todos los hijos del modelo (todas las mallas)
+                model.traverse(child => {
+                    // Verificamos si el hijo es una Malla (Mesh) y tiene un material
+                    if (child.isMesh && child.material) {
+                        // Forzamos a que el material NO sea transparente.
+                        // Esto soluciona los problemas de Z-fighting (parpadeo)
+                        // que se ven en el video de la olla.
+                        child.material.transparent = false;
+                        child.material.depthWrite = true; // Asegura que escriba en el buffer de profundidad
+                    }
+                });
+                // --- FIN DE LA NUEVA SECCIÓN ---
+
                 // Centrar y escalar el modelo
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
@@ -121,12 +115,15 @@ async function createProductPool() {
 
             }).catch(error => {
                 console.error('Error al cargar el modelo:', product.path, error);
+                // Si falla la carga, crea un cubo rojo de fallback
                 const fallbackGeo = new THREE.BoxGeometry(2, 2, 2);
                 const fallbackMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
                 return new THREE.Mesh(fallbackGeo, fallbackMat);
             });
 
         } else {
+            // ... (código sin cambios) ...
+            // El producto es una forma básica (placeholder)
             let geometry;
             switch (product.type) {
                 case 'Box': geometry = new THREE.BoxGeometry(2, 2, 2); break;
@@ -138,7 +135,7 @@ async function createProductPool() {
             }
             modelPromise = Promise.resolve(new THREE.Mesh(geometry, material));
         }
-
+        // ... (código sin cambios) ...
         return modelPromise.then(model => ({
             id: product.id,
             model: model
@@ -156,57 +153,50 @@ async function createProductPool() {
 
 // Crea los botones en la UI (HTML)
 function createProductButtons() {
+    // ... (código sin cambios) ...
     const container = document.getElementById('buttonContainer');
     productDatabase.forEach(product => {
         const button = document.createElement('button');
         button.className = 'product-button';
         button.innerText = product.name;
-        
         button.addEventListener('click', () => {
             displayProduct(product);
         });
-        
         container.appendChild(button);
     });
 }
 
 // Muestra un producto (activándolo del pool)
 function displayProduct(productData) {
+    // ... (código sin cambios) ...
     if (currentModel) {
         currentModel.visible = false;
     }
-
     const modelToShow = productPool[productData.id];
     if (modelToShow) {
         modelToShow.visible = true;
         currentModel = modelToShow;
-        
-        // --- CAMBIO IMPORTANTE ---
-        // Reseteamos los controles y la cámara
         controls.reset();
-        camera.position.set(0, 0, 5); // Posición inicial de la cámara
-        // Apuntamos al centro del modelo (que está en 0,0,0)
+        camera.position.set(0, 0, 5); 
         controls.target.set(0, 0, 0); 
-        // --- FIN DEL CAMBIO ---
     }
 }
 
 // Bucle de render (Update)
 function animate() {
+    // ... (código sin cambios) ...
     requestAnimationFrame(animate);
-    controls.update(); // Esencial para TrackballControls
+    controls.update(); 
     renderer.render(scene, camera);
 }
 
 // Maneja el redimensionamiento de la ventana
 function onWindowResize() {
+    // ... (código sin cambios) ...
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    // --- CAMBIO IMPORTANTE ---
-    // TrackballControls también necesita saber el nuevo tamaño
     controls.handleResize();
-    // --- FIN DEL CAMBIO ---
 }
 
 // --- 3. INICIO DE LA APLICACIÓN ---
