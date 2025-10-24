@@ -26,21 +26,41 @@ const productDatabase = [
         linea: 'Línea Lisboa', 
         type: 'GLB',
         path: 'models/olla.glb', 
-        thumbnail: 'models/thumbnails/olla_thumb.jpg' 
+        thumbnail: 'models/thumbnails/olla_thumb.jpg',
+        initialPosition: { x: 0, y: -0.3, z: 0 }
     },
     { 
-        id: 'esfera', 
-        name: 'Esfera',
+          id: 'knife', 
+        name: 'Knife', 
+        linea: 'Línea Lisboa', 
+        type: 'GLB',
+        path: 'models/knife.glb', 
+        thumbnail: 'models/thumbnails/knife_thumb.jpg', 
+        initialRotation: { x: 0, y: 90, z: 45 }
+        },{ 
+        id: 'dona', 
+        name: 'Dona',
         linea: 'Línea Primitiva',
-        type: 'Sphere', 
-        thumbnail: 'models/thumbnails/esfera_thumb.jpg'
-    },
-    { 
+        type: 'Torus',
+        thumbnail: 'models/thumbnails/dona_thumb.jpg'
+    },{ 
+        id: 'cilindro', 
+        name: 'Cilindro',
+        linea: 'Línea Primitiva',
+        type: 'Cylinder',
+        thumbnail: 'models/thumbnails/cilindro_thumb.jpg'
+    },{ 
+        id: 'cono', // El "triángulo"
+        name: 'Cono',
+        linea: 'Línea Primitiva',
+        type: 'Cone',
+        thumbnail: 'models/thumbnails/cono_thumb.jpg'
+    },{ 
         id: 'cubo', 
         name: 'Cubo',
         linea: 'Línea Primitiva',
         type: 'Box', 
-        thumbnail: 'models/thumbnails/cubo_thumb.jpg'
+        thumbnail: 'models/thumbnails/cube_thumb.jpg'
     },
 ];
 
@@ -48,9 +68,6 @@ const productDatabase = [
 
 function init() {
     scene = new THREE.Scene();
-
-    // --- (FONDO CORREGIDO) ---
-    // Actualizado a tu nuevo color de fondo #6d6d6d
     scene.background = new THREE.Color(0x6d6d6d); 
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -61,8 +78,7 @@ function init() {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // (LUCES CORREGIDAS) 
-    const ambientLight = new THREE.AmbientLight(0xffffff, .9); 
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); 
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0); 
     directionalLight.position.set(5, 10, 7.5);
@@ -114,14 +130,37 @@ async function createProductPool() {
                     }
                 });
 
+                // 1. Centrado automático (como antes)
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
                 model.position.sub(center); 
 
+                // 2. Escalado automático (como antes)
                 const size = box.getSize(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z);
                 const scale = 3.0 / maxDim; 
                 model.scale.set(scale, scale, scale);
+
+                // --- (NUEVO) 3. Aplicar rotación inicial (si existe) ---
+                if (product.initialRotation) {
+                    model.rotation.set(
+                        THREE.MathUtils.degToRad(product.initialRotation.x),
+                        THREE.MathUtils.degToRad(product.initialRotation.y),
+                        THREE.MathUtils.degToRad(product.initialRotation.z)
+                    );
+                }
+
+                // --- (NUEVO) 4. Aplicar posición inicial (si existe) ---
+                // Esto se *suma* a la posición centrada, actuando como un 'offset'
+                if (product.initialPosition) {
+                    model.position.add(
+                        new THREE.Vector3(
+                            product.initialPosition.x,
+                            product.initialPosition.y,
+                            product.initialPosition.z
+                        )
+                    );
+                }
                 
                 return model;
 
@@ -175,6 +214,10 @@ function createProductButtons() {
             button.innerText = product.name[0]; 
             button.style.backgroundColor = '#ccc';
             button.style.color = 'black';
+            button.style.fontSize = '24px'; 
+            button.style.fontWeight = '700';
+            button.style.textAlign = 'center';
+            button.style.lineHeight = '90px'; 
         }
         
         button.addEventListener('click', () => {
